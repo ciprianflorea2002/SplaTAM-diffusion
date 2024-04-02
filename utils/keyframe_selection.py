@@ -53,9 +53,12 @@ def keyframe_selection_overlap(gt_depth, w2c, intrinsics, keyframe_list, k, pixe
         """
         # Radomly Sample Pixel Indices from valid depth pixels
         width, height = gt_depth.shape[2], gt_depth.shape[1]
-        valid_depth_indices = torch.where(gt_depth[0] > 0)
+        print(width, height) # 876, 584
+        valid_depth_indices = torch.where(gt_depth[0] > 0) 
+        print(valid_depth_indices) # (tensor([], device='cuda:0', dtype=torch.int64), tensor([], device='cuda:0', dtype=torch.int64))
         valid_depth_indices = torch.stack(valid_depth_indices, dim=1)
-        indices = torch.randint(valid_depth_indices.shape[0], (pixels,))
+        print(valid_depth_indices) # tensor([], device='cuda:0', size=(0, 2), dtype=torch.int64)
+        indices = torch.randint(valid_depth_indices.shape[0], (pixels,)) # RuntimeError: random_ expects 'from' to be less than 'to', but got from=0 >= to=0
         sampled_indices = valid_depth_indices[indices]
 
         # Back Project the selected pixels to 3D Pointcloud

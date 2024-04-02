@@ -57,13 +57,13 @@ def get_dataset(config_dict, basedir, sequence, **kwargs):
     elif config_dict["dataset_name"].lower() in ["tum"]:
         return TUMDataset(config_dict, basedir, sequence, **kwargs)
     elif config_dict["dataset_name"].lower() in ["scannetpp"]:
-        return ScannetPPDataset(basedir, sequence, **kwargs)
+        return ScannetPPDataset(basedir, sequence, **kwargs)    # interested in the Scannet++ dataset
     elif config_dict["dataset_name"].lower() in ["nerfcapture"]:
         return NeRFCaptureDataset(basedir, sequence, **kwargs)
     else:
         raise ValueError(f"Unknown dataset name {config_dict['dataset_name']}")
 
-
+# Check depth - 0.0 is invalid depth
 def get_pointcloud(color, depth, intrinsics, w2c, transform_pts=True, 
                    mask=None, compute_mean_sq_dist=False, mean_sq_dist_method="projective"):
     width, height = color.shape[2], color.shape[1]
@@ -116,7 +116,7 @@ def get_pointcloud(color, depth, intrinsics, w2c, transform_pts=True,
     else:
         return point_cld
 
-
+# gaussian_distribution = "isotropic" / "anisotropic"
 def initialize_params(init_pt_cld, num_frames, mean3_sq_dist, gaussian_distribution):
     num_pts = init_pt_cld.shape[0]
     means3D = init_pt_cld[:, :3] # [num_gaussians, 3]
@@ -170,6 +170,7 @@ def initialize_first_timestep(dataset, num_frames, scene_radius_depth_ratio,
                               mean_sq_dist_method, densify_dataset=None, gaussian_distribution=None):
     # Get RGB-D Data & Camera Parameters
     color, depth, intrinsics, pose = dataset[0]
+    print(dataset[0]) # check the data
 
     # Process RGB-D Data
     color = color.permute(2, 0, 1) / 255 # (H, W, C) -> (C, H, W)
@@ -210,7 +211,7 @@ def initialize_first_timestep(dataset, num_frames, scene_radius_depth_ratio,
     else:
         return params, variables, intrinsics, w2c, cam
 
-
+# mapping=True for novel view synthesis
 def get_loss(params, curr_data, variables, iter_time_idx, loss_weights, use_sil_for_loss,
              sil_thres, use_l1, ignore_outlier_depth_loss, tracking=False, 
              mapping=False, do_ba=False, plot_dir=None, visualize_tracking_loss=False, tracking_iteration=None):
@@ -639,7 +640,7 @@ def rgbd_slam(config: dict):
     else:
         checkpoint_time_idx = 0
     
-    # Iterate over Scan
+    # Iterate over Scan # MAIN LOOP
     for time_idx in tqdm(range(checkpoint_time_idx, num_frames)):
         # Load RGBD frames incrementally instead of all frames
         color, depth, _, gt_pose = dataset[time_idx]
@@ -806,7 +807,7 @@ def rgbd_slam(config: dict):
                 curr_w2c[:3, 3] = curr_cam_tran
                 # Select Keyframes for Mapping
                 num_keyframes = config['mapping_window_size']-2
-                selected_keyframes = keyframe_selection_overlap(depth, curr_w2c, intrinsics, keyframe_list[:-1], num_keyframes)
+                selected_keyframes = keyframe_selection_overlap(depth, curr_w2c, intrinsics, keyframe_list[:-1], num_keyframes) # Error here
                 selected_time_idx = [keyframe_list[frame_idx]['id'] for frame_idx in selected_keyframes]
                 if len(keyframe_list) > 0:
                     # Add last keyframe to the selected keyframes
@@ -999,6 +1000,7 @@ if __name__ == "__main__":
     experiment = SourceFileLoader(
         os.path.basename(args.experiment), args.experiment
     ).load_module()
+    
 
     # Set Experiment Seed
     seed_everything(seed=experiment.config['seed'])

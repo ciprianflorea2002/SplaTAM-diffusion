@@ -53,7 +53,7 @@ config = dict(
     checkpoint_interval=5, # Checkpoint Interval
     use_wandb=True,
     wandb=dict(
-        entity="theairlab",
+        entity="instant-gaussian-splatting",
         project="SplaTAM",
         group=group_name,
         name=run_name,
@@ -62,7 +62,7 @@ config = dict(
     ),
     data=dict(
         dataset_name="scannetpp",
-        basedir="./data/ScanNet++/data",
+        basedir="/mnt/data0/datasets/scannetpp/data/data",
         sequence=scene_name,
         ignore_bad=False,
         use_train_split=use_train_split,

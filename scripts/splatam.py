@@ -643,7 +643,7 @@ def rgbd_slam(config: dict):
     # Iterate over Scan # MAIN LOOP
     for time_idx in tqdm(range(checkpoint_time_idx, num_frames)):
         # Load RGBD frames incrementally instead of all frames
-        color, depth, _, gt_pose = dataset[time_idx]
+        color, depth, _, gt_pose = dataset[time_idx] # assign depth here
         # Process poses
         gt_w2c = torch.linalg.inv(gt_pose)
         # Process RGB-D Data
